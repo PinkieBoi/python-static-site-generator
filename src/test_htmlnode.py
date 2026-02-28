@@ -1,6 +1,6 @@
 import unittest
 
-from src.htmlnode import HTMLNode
+from src.htmlnode import HTMLNode, LeafNode, ParentNode
 
 
 class TestHTMLNode(unittest.TestCase):
@@ -18,22 +18,30 @@ class TestHTMLNode(unittest.TestCase):
             })
         self.assertEqual(node.props_to_html(), ' href="https://gitlab.com" target="_blank"')
 
+class TestLeafNode(unittest.TestCase):
+    def test_eq(self):
+        node = LeafNode("p", "This is a paragraph of text.")
+        node2 = LeafNode("a", "Click me!", {"href": "https://www.google.com"})
+        self.assertEqual(node.to_html(), "<p>This is a paragraph of text.</p>")
+        self.assertEqual(node2.to_html(), '<a href="https://www.google.com">Click me!</a>')
 
-class LeafNode(HTMLNode):
-    def __init__(self, tag, value, props=None):
-        super().__init__()
-        self.tag = tag
-        self.value = value
-        self.props = props or {}
-        self.children = []
+    def test_leaf_to_html_p(self):
+        node = LeafNode("p", "Hello, world!")
+        self.assertEqual(node.to_html(), "<p>Hello, world!</p>")
 
-    def __repr__(self):
-        return f"HTMLNode({self.tag}, {self.value}, {self.props}]))"
 
-    def to_html(self):
-        if self.value is None:
-            raise ValueError("LeafNode requires value property")
-        if self.tag is None:
-            return self.value
+class TestParentNode(unittest.TestCase):
+    def test_to_html_with_children(self):
+        child_node = LeafNode("span", "child")
+        parent_node = ParentNode("div", [child_node])
+        self.assertEqual(parent_node.to_html(), "<div><span>child</span></div>")
 
-        return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
+    def test_to_html_with_grandchildren(self):
+        grandchild_node = LeafNode("b", "grandchild")
+        child_node = ParentNode("span", [grandchild_node])
+        parent_node = ParentNode("div", [child_node])
+        self.assertEqual(
+            parent_node.to_html(),
+            "<div><span><b>grandchild</b></span></div>",
+        )
+
