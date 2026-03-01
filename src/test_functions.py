@@ -1,6 +1,6 @@
 import unittest
 from textnode import TextNode, TextType
-from functions import text_node_to_html_node, split_nodes_delimiter, extract_md_images, extract_md_links
+from functions import text_node_to_html_node, split_nodes_delimiter, extract_md_images, extract_md_links, split_nodes_image, split_nodes_link
 
 
 class TestTextNodeToHTMLNode(unittest.TestCase):
@@ -74,4 +74,62 @@ class TestMDExtract(unittest.TestCase):
         text = "This is text with a [rick roll](https://i.imgur.com/aKaOqIh.gif) and [obi wan](https://i.imgur.com/fJRm4Vk.jpeg)"
         matches = extract_md_images(text)
         self.assertListEqual([], matches)
+        
+
+
+class TestSplitImgsandLinks(unittest.TestCase):
+    def test_split_image(self):
+        node = TextNode(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png)",
+            TextType.TEXT
+        )
+        new_nodes = split_nodes_image([node])
+        expected_output = [[
+                TextNode("This is text with an ", TextType.TEXT),
+                TextNode("image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png"),
+                TextNode(" and another ", TextType.TEXT),
+                TextNode(
+                    "second image", TextType.IMAGE, "https://i.imgur.com/3elNhQu.png"
+                ),
+            ]]
+        self.assertListEqual(expected_output, new_nodes)
+
+    def test_split_link(self):
+        node = TextNode(
+            "This is text with a [link](https://i.imgur.com/zjjcJKZ.png) and a [second external link](https://i.imgur.com/3elNhQu.png)",
+            TextType.TEXT
+        )
+        new_nodes = split_nodes_link([node])
+        self.assertEqual(
+            [
+                TextNode("This is text with a ", TextType.TEXT),
+                TextNode("link", TextType.LINK, "https://i.imgur.com/zjjcJKZ.png"),
+                TextNode(" and a ", TextType.TEXT),
+                TextNode(
+                    "second external link",
+                    TextType.LINK,
+                    "https://i.imgur.com/3elNhQu.png",
+                ),
+            ],
+            new_nodes,
+        )
+
+    def test_trailing_str(self):
+        node = TextNode(
+            "This is text with a [link](https://i.imgur.com/zjjcJKZ.png) and a [second external link](https://i.imgur.com/3elNhQu.png)",
+            TextType.TEXT
+        )
+        new_nodes = split_nodes_link([node])
+        node = [
+            TextNode("This is text with a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://i.imgur.com/zjjcJKZ.png"),
+            TextNode(" and a ", TextType.TEXT),
+            TextNode(
+                "second external link",
+                TextType.LINK,
+                "https://i.imgur.com/3elNhQu.png",
+            ),
+            TextNode("", TextType.TEXT),
+        ]
+        self.assertFalse(new_nodes == node)
 
