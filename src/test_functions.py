@@ -1,6 +1,8 @@
 import unittest
+
+from src.functions import markdown_to_blocks
 from textnode import TextNode, TextType
-from functions import text_node_to_html_node, split_nodes_delimiter, extract_md_images, extract_md_links, split_nodes_image, split_nodes_link, text_to_textnodes
+from functions import text_node_to_html_node, split_nodes_delimiter, extract_md_images, extract_md_links, split_nodes_image, split_nodes_link, text_to_textnodes, markdown_to_blocks
 
 
 class TestTextNodeToHTMLNode(unittest.TestCase):
@@ -151,3 +153,46 @@ class TestTextToTextNodes(unittest.TestCase):
         ]
         alice = text_to_textnodes(text)
         self.assertListEqual(alice, expected_output)
+
+
+class TestMDToBlocks(unittest.TestCase):
+    def test_markdown_to_blocks(self):
+        md = """        
+            This is **bolded** paragraph
+
+            This is another paragraph with _italic_ text and `code` here
+            This is the same paragraph on a new line
+
+            - This is a list
+            - with items
+        """
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks,
+            [
+                "This is **bolded** paragraph",
+                "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
+                "- This is a list\n- with items",
+            ],
+        )
+    
+    def test_md_to_blocks(self):
+        text = """
+            # This is a heading
+
+            This is a paragraph of text.
+            It has some **bold** and _italic_ words inside of it.
+            
+            - This is the first list item in a list block
+            - This is a list item
+            - This is another list item
+        """
+        blocks = markdown_to_blocks(text)
+        self.assertEqual(
+            blocks, 
+            [
+                "# This is a heading",
+                "This is a paragraph of text.\nIt has some **bold** and _italic_ words inside of it.",
+                "- This is the first list item in a list block\n- This is a list item\n- This is another list item"
+            ]
+        )

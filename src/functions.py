@@ -104,3 +104,13 @@ def text_to_textnodes(text):
     add_itc_nodes = split_nodes_delimiter(add_code_nodes,"_", TextType.ITALIC)
     all_nodes = split_nodes_delimiter(add_itc_nodes,"**", TextType.BOLD)
     return all_nodes
+
+
+def markdown_to_blocks(markdown_text):
+    blocks = markdown_text.strip().split("\n\n")
+    for block in blocks:
+        blocks[blocks.index(block)] = "\n".join([new_block.strip().replace("\n", "") for new_block in block.split("\n")])
+    new_blocks = []
+    for item in blocks:
+        new_blocks.extend(item.split("\n\n"))
+    return new_blocks
