@@ -58,7 +58,6 @@ def split_nodes_image(old_nodes):
                 if node_text.startswith("!["):
                     new_nodes.append(TextNode(text=img[0], text_type=TextType.IMAGE, url=img[1]))
                 else:
-                    print(f"\n{node_text}\n")
                     new_nodes.extend(
                         [TextNode(text=split_text[0], text_type=node.text_type),
                          TextNode(text=img[0], text_type=TextType.IMAGE, url=img[1])
@@ -67,7 +66,7 @@ def split_nodes_image(old_nodes):
                 node_text = split_text[1]
             if len(node_text) > 0:
                 new_nodes.append(TextNode(text=node_text, text_type=node.text_type))
-        all_new_nodes.append(new_nodes)
+        all_new_nodes.extend(new_nodes)
     return all_new_nodes
 
 
@@ -95,3 +94,13 @@ def split_nodes_link(old_nodes):
                 new_nodes.append(TextNode(text=node_text, text_type=TextType.TEXT))
         all_new_nodes.extend(new_nodes)
     return all_new_nodes
+
+
+def text_to_textnodes(text):
+    node = TextNode(text=text, text_type=TextType.TEXT)
+    images_and_text = split_nodes_image([node])
+    add_link_nodes = split_nodes_link(images_and_text)
+    add_code_nodes = split_nodes_delimiter(add_link_nodes,"`", TextType.CODE)
+    add_itc_nodes = split_nodes_delimiter(add_code_nodes,"_", TextType.ITALIC)
+    all_nodes = split_nodes_delimiter(add_itc_nodes,"**", TextType.BOLD)
+    return all_nodes
