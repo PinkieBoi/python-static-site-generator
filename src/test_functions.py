@@ -1,6 +1,6 @@
 import unittest
-from functions import text_node_to_html_node, split_nodes_delimiter
 from textnode import TextNode, TextType
+from functions import text_node_to_html_node, split_nodes_delimiter, extract_md_images, extract_md_links
 
 
 class TestTextNodeToHTMLNode(unittest.TestCase):
@@ -31,3 +31,47 @@ class TestSplitNodesDelimiter(unittest.TestCase):
         split_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
         expected_output = [node]
         self.assertEqual(split_nodes, expected_output)
+
+
+class TestMDExtract(unittest.TestCase):
+    def test_extract_md_images(self):
+        matches = extract_md_images(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)"
+        )
+        self.assertListEqual([("image", "https://i.imgur.com/zjjcJKZ.png")], matches)
+
+    def test_many_imgs(self):
+        text = "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and ![obi wan](https://i.imgur.com/fJRm4Vk.jpeg)"
+        matches = extract_md_images(text)
+        self.assertEqual(
+            matches,
+            [
+                ("rick roll", "https://i.imgur.com/aKaOqIh.gif"),
+                ("obi wan", "https://i.imgur.com/fJRm4Vk.jpeg"),
+            ],
+        )
+
+    def test_extract_md_links(self):
+        matches = extract_md_links(
+            "This is text with an [some text](https://i.imgur.com/zjjcJKZ.png)"
+        )
+        self.assertListEqual(
+            [("some text", "https://i.imgur.com/zjjcJKZ.png")], matches
+        )
+
+    def test_many_links(self):
+        text = "This is text with a [rick roll](https://i.imgur.com/aKaOqIh.gif) and [obi wan](https://i.imgur.com/fJRm4Vk.jpeg)"
+        matches = extract_md_links(text)
+        self.assertEqual(
+            matches,
+            [
+                ("rick roll", "https://i.imgur.com/aKaOqIh.gif"),
+                ("obi wan", "https://i.imgur.com/fJRm4Vk.jpeg"),
+            ],
+        )
+
+    def test_no_match(self):
+        text = "This is text with a [rick roll](https://i.imgur.com/aKaOqIh.gif) and [obi wan](https://i.imgur.com/fJRm4Vk.jpeg)"
+        matches = extract_md_images(text)
+        self.assertListEqual([], matches)
+
