@@ -1,6 +1,40 @@
 import re
+from enum import Enum
+from unittest import case
+
 from htmlnode import LeafNode
 from textnode import TextNode, TextType
+
+
+class BlockType(Enum):
+    PARAGRAPH = "paragraph"
+    HEADING = "heading"
+    CODE = "code"
+    QUOTE = "quote"
+    UNORDERED_LIST = "unordered_list"
+    ORDERED_LIST = "ordered_list"
+
+
+def block_to_block_type(text_block):
+    block = text_block.strip()
+    if re.match(r"^#{1,6} ", block):
+        return BlockType.HEADING
+    elif re.match(r'^```[^`{3}]+?```$', block): # and re.match(r'```$', block):
+        return BlockType.CODE
+    elif all([re.match(r'^>', line) for line in block.splitlines()]):
+        return BlockType.QUOTE
+    elif all([re.match("^- ", line) for line in block.splitlines()]):
+        return BlockType.UNORDERED_LIST
+    elif all([re.match(r'\d\.\s', line) for line in block.splitlines()]):
+        prev = 0
+        for line in block.splitlines():
+            if int(line.split(".")[0]) != prev + 1:
+                return BlockType.PARAGRAPH
+            prev = int(line.split(".")[0])
+        return BlockType.ORDERED_LIST
+    else:
+        return BlockType.PARAGRAPH
+
 
 
 def text_node_to_html_node(text_node: TextNode):

@@ -1,8 +1,8 @@
 import unittest
 
-from src.functions import markdown_to_blocks
 from textnode import TextNode, TextType
-from functions import text_node_to_html_node, split_nodes_delimiter, extract_md_images, extract_md_links, split_nodes_image, split_nodes_link, text_to_textnodes, markdown_to_blocks
+from functions import text_node_to_html_node, split_nodes_delimiter, extract_md_images, extract_md_links, \
+    split_nodes_image, split_nodes_link, text_to_textnodes, markdown_to_blocks, block_to_block_type, BlockType
 
 
 class TestTextNodeToHTMLNode(unittest.TestCase):
@@ -196,3 +196,34 @@ class TestMDToBlocks(unittest.TestCase):
                 "- This is the first list item in a list block\n- This is a list item\n- This is another list item"
             ]
         )
+
+class TestBlockToBlockType(unittest.TestCase):
+    def test_block_to_block_type(self):
+        block = "###### This is a heading"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.HEADING)
+
+    def test_sequential_ol(self):
+        block = "1. This is a list\n3. This list is numbered incorrectly\n5. This should appear as a paragraph"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.PARAGRAPH)
+
+    def test_ordered_list(self):
+        block = "1. This is a list\n2. This list is numbered incorrectly\n3. This should appear as a paragraph"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.ORDERED_LIST)
+
+    def test_unordered_list(self):
+        block = "- This is a list\n- This list is numbered correctly\n- This should appear as an ordered list"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.UNORDERED_LIST)
+
+    def test_code(self):
+        block = "```\nprint('Hello world')\n```"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.CODE)
+
+    def test_quote(self):
+        block = "> I have no special talent. I am only passionately curious.\n> - Albert Einstein"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.QUOTE)
