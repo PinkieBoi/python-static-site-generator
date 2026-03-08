@@ -2,7 +2,8 @@ import unittest
 
 from textnode import TextNode, TextType
 from functions import text_node_to_html_node, split_nodes_delimiter, extract_md_images, extract_md_links, \
-    split_nodes_image, split_nodes_link, text_to_textnodes, markdown_to_blocks, block_to_block_type, BlockType
+    split_nodes_image, split_nodes_link, text_to_textnodes, markdown_to_blocks, block_to_block_type, BlockType, \
+    markdown_to_html_nodes
 
 
 class TestTextNodeToHTMLNode(unittest.TestCase):
@@ -79,7 +80,7 @@ class TestMDExtract(unittest.TestCase):
         
 
 
-class TestSplitImgsandLinks(unittest.TestCase):
+class TestSplitImagesAndLinks(unittest.TestCase):
     def test_split_image(self):
         node = TextNode(
             "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png)",
@@ -197,6 +198,33 @@ class TestMDToBlocks(unittest.TestCase):
             ]
         )
 
+    def test_code_block(self):
+        text = """
+            # This is a heading
+
+            This is a paragraph of text.
+            It has some **bold** and _italic_ words inside of it.
+
+            ```
+            print('hello world')
+            ```
+
+            - This is the first list item in a list block
+            - This is a list item
+            - This is another list item
+        """
+        blocks = markdown_to_blocks(text)
+        self.assertEqual(
+            blocks,
+            [
+                "# This is a heading",
+                "This is a paragraph of text.\nIt has some **bold** and _italic_ words inside of it.",
+                "```\nprint('hello world')\n```",
+                "- This is the first list item in a list block\n- This is a list item\n- This is another list item"
+            ]
+        )
+
+
 class TestBlockToBlockType(unittest.TestCase):
     def test_block_to_block_type(self):
         block = "###### This is a heading"
@@ -227,3 +255,55 @@ class TestBlockToBlockType(unittest.TestCase):
         block = "> I have no special talent. I am only passionately curious.\n> - Albert Einstein"
         block_type = block_to_block_type(block)
         self.assertEqual(block_type, BlockType.QUOTE)
+
+
+class TestMDtoHTMLNodes(unittest.TestCase):
+    def test_paragraphs(self):
+        md = """
+        This is **bolded** paragraph
+        text in a p
+        tag here
+
+        This is another paragraph with _italic_ text and `code` here
+
+        """
+        node = markdown_to_html_nodes(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<body><div><p>This is <b>bolded</b> paragraph\ntext in a p\ntag here</p></div><div><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div></body>",
+        )
+
+    def test_codeblock(self):
+        md = """
+        ```
+        This is text that _should_ remain
+        the **same** even with inline stuff
+        ```
+        """
+        node = markdown_to_html_nodes(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<body><div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div></body>",
+        )
+
+    def test_md_doc(self):
+        md = """
+        # This is a full document
+
+        This is **bolded** paragraph
+        text in a p
+        tag here
+
+        This is another paragraph with _italic_ text and `code` here
+
+        ```
+        This is text that _should_ remain
+        the **same** even with inline stuff
+        ```
+        """
+        html_nodes = markdown_to_html_nodes(md)
+        html = html_nodes.to_html()
+        expected_output = "<body><h1>This is a full document</h1><div><p>This is <b>bolded</b> paragraph\ntext in a p\ntag here</p></div><div><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div><div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div></body>"
+        self.assertEqual(html, expected_output)
