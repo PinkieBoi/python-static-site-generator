@@ -3,7 +3,7 @@ import unittest
 from textnode import TextNode, TextType
 from functions import text_node_to_html_node, split_nodes_delimiter, extract_md_images, extract_md_links, \
     split_nodes_image, split_nodes_link, text_to_textnodes, markdown_to_blocks, block_to_block_type, BlockType, \
-    markdown_to_html_nodes
+    markdown_to_html_nodes, extract_title
 
 
 class TestTextNodeToHTMLNode(unittest.TestCase):
@@ -307,3 +307,24 @@ class TestMDtoHTMLNodes(unittest.TestCase):
         html = html_nodes.to_html()
         expected_output = "<body><h1>This is a full document</h1><div><p>This is <b>bolded</b> paragraph\ntext in a p\ntag here</p></div><div><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div><div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div></body>"
         self.assertEqual(html, expected_output)
+
+
+class TestExtractTitle(unittest.TestCase):
+    def test_extract_title(self):
+        md = """
+        # This is a full document
+
+        This is **bolded** paragraph
+        text in a p
+        tag here
+
+        This is another paragraph with _italic_ text and `code` here
+
+        ```
+        This is text that _should_ remain
+        the **same** even with inline stuff
+        ```
+        """
+        md_title = extract_title(md)
+        print(md_title)
+        self.assertEqual(md_title, "This is a full document")

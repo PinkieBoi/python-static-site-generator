@@ -150,16 +150,6 @@ def markdown_to_blocks(markdown_text):
     return new_blocks
 
 
-# def resolve_lst_recursion(block_lst):
-#     blocks = []
-#     for md_block in block_lst:
-#         if isinstance(md_block, list):
-#             blocks.extend(md_block)
-#         else:
-#             blocks.append(md_block)
-#     return blocks
-
-
 def markdown_to_html_nodes(markdown_text):
     new_nodes = []
     markdown_blocks = markdown_to_blocks(markdown_text)
@@ -180,32 +170,6 @@ def markdown_to_html_nodes(markdown_text):
     return ParentNode(tag="body", children=[new_nodes])
 
 
-# def markdown_to_html_node(markdown_text):
-#     markdown_blocks = markdown_to_blocks(markdown_text)
-#     html_nodes = []
-#     for block in markdown_blocks:
-#         print(block_to_block_type(block))
-#         match block_to_block_type(block):
-#             case BlockType.HEADING:
-#                 html_nodes.append(HTMLNode(
-#                     tag=f"h{len(re.match(r'^#{1,6}', block).group())}",
-#                     value=re.sub(r'^#{1,6} ', '', block)
-#                 ))
-#             case BlockType.CODE:
-#                 html_nodes.append(
-#                     ParentNode(tag="pre", children=[
-#                         LeafNode(tag="code", value=re.sub(r'^`{3}|`{3}$', '', block).strip())
-#                     ])
-#                 )
-#             case BlockType.QUOTE:
-#                 html_nodes.append(HTMLNode(tag="blockquote", value=re.sub(r'^>\s?', '', block).strip()))
-#             case BlockType.UNORDERED_LIST:
-#                 html_nodes.append(ParentNode(tag="ul", children = [LeafNode(tag="li", value=list_item) for list_item in block.splitlines()]))
-#             case BlockType.ORDERED_LIST:
-#                 html_nodes.append(ParentNode(tag="ol", children=[LeafNode(tag="li", value=list_item) for list_item in block.splitlines()]))
-#             case _:
-#                 child_nodes = [text_node_to_html_node(node) for node in text_to_textnodes(block)]
-#                 html_nodes.append(ParentNode(tag="p", children=child_nodes))
-#
-#     html_node = ParentNode(tag="div", children=[html_nodes])
-#     return html_node
+def extract_title(markdown):
+    md_title = re.findall(r'# (.+)', markdown)
+    return md_title[0]
