@@ -271,7 +271,7 @@ class TestMDtoHTMLNodes(unittest.TestCase):
         html = node.to_html()
         self.assertEqual(
             html,
-            "<body><div><p>This is <b>bolded</b> paragraph\ntext in a p\ntag here</p></div><div><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div></body>",
+            "<div><div><p>This is <b>bolded</b> paragraph\ntext in a p\ntag here</p></div><div><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div></div>",
         )
 
     def test_codeblock(self):
@@ -285,7 +285,7 @@ class TestMDtoHTMLNodes(unittest.TestCase):
         html = node.to_html()
         self.assertEqual(
             html,
-            "<body><div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div></body>",
+            "<div><div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div></div>",
         )
 
     def test_md_doc(self):
@@ -305,7 +305,7 @@ class TestMDtoHTMLNodes(unittest.TestCase):
         """
         html_nodes = markdown_to_html_nodes(md)
         html = html_nodes.to_html()
-        expected_output = "<body><h1>This is a full document</h1><div><p>This is <b>bolded</b> paragraph\ntext in a p\ntag here</p></div><div><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div><div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div></body>"
+        expected_output = "<div><h1>This is a full document</h1><div><p>This is <b>bolded</b> paragraph\ntext in a p\ntag here</p></div><div><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div><div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div></div>"
         self.assertEqual(html, expected_output)
 
 
@@ -328,3 +328,10 @@ class TestExtractTitle(unittest.TestCase):
         md_title = extract_title(md)
         print(md_title)
         self.assertEqual(md_title, "This is a full document")
+
+    def test_provided_md_document(self):
+        with open("content/index.md", "r") as md_file:
+            md = md_file.read()
+        html_nodes = markdown_to_html_nodes(md)
+        for node in html_nodes.children:
+            print(node)

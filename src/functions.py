@@ -1,6 +1,7 @@
+import os
 import re
 from enum import Enum
-from htmlnode import ParentNode, LeafNode
+from htmlnode import ParentNode, LeafNode, HTMLNode
 from textnode import TextNode, TextType
 
 
@@ -159,17 +160,40 @@ def markdown_to_html_nodes(markdown_text):
                 new_nodes.append(LeafNode(tag=f"h{len(re.match(r'^#{1,6}', md_block).group())}", value=re.sub(r'^#{1,6} ', '', md_block)))
             case BlockType.CODE:
                 new_nodes.append(ParentNode(tag="div", children=[ParentNode(tag="pre", children=[LeafNode(tag="code", value=re.sub(r'^```|```$', '', md_block).lstrip())])]))
+            case BlockType.QUOTE:
+                new_nodes.append(LeafNode(tag="quote", value="\n".join(md_block.splitlines()).replace('"', "'")))
+            case BlockType.ORDERED_LIST:
+                new_nodes.append(ParentNode(tag="ol", children=[LeafNode(tag="li", value=re.sub(r'\d\. ', '', item)) for item in md_block.splitlines()]))
+            case BlockType.UNORDERED_LIST:
+                new_nodes.append(ParentNode(tag="ul", children=[LeafNode(tag="li", value=re.sub(r'- ', '', item)) for item in md_block.splitlines()]))
             case _:
                 if "\n" in md_block:
                     md_block = "\n".join(md_block.splitlines())
                 child_nodes = []
                 text_nodes = text_to_textnodes(md_block)
                 for node in text_nodes:
-                    child_nodes.append(text_node_to_html_node(node))
+                    if len(node.text) > 0:
+                        child_nodes.append(text_node_to_html_node(node))
                 new_nodes.append(ParentNode(tag="div", children=[ParentNode(tag="p", children=child_nodes)]))
-    return ParentNode(tag="body", children=[new_nodes])
+    return ParentNode(tag="div", children=[new_nodes])
 
 
 def extract_title(markdown):
     md_title = re.findall(r'# (.+)', markdown)
     return md_title[0]
+
+
+def generate_page(from_path, template_path, dest_path):
+    abs_path = os.path.abspath(".") + "/" + "/".join(dest_path.split("/")[:-1])
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+    with open(from_path, "r") as md_file:
+        markdown = md_file.read()
+    html_node = markdown_to_html_nodes(markdown)
+    page_title = extract_title(markdown)
+    print(html_node)
+    with open(template_path, "r") as template_file:
+        html_template = template_file.read()
+    print(html_template)
+    with open(dest_path, "w") as html_page:
+        new_page = html_template.replace("{{ Title }}", page_title).replace("{{ Content }}", html_node.to_html())
+        html_page.write(new_page)
