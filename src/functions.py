@@ -161,11 +161,22 @@ def markdown_to_html_nodes(markdown_text):
             case BlockType.CODE:
                 new_nodes.append(ParentNode(tag="div", children=[ParentNode(tag="pre", children=[LeafNode(tag="code", value=re.sub(r'^```|```$', '', md_block).lstrip())])]))
             case BlockType.QUOTE:
-                new_nodes.append(LeafNode(tag="quote", value="\n".join(md_block.splitlines()).replace('"', "'")))
+                # TODO: Fix to remove '> ' from html output
+                new_nodes.append(LeafNode(tag="blockquote", value="\n".join(md_block.splitlines().replace('"', "'"))))
             case BlockType.ORDERED_LIST:
-                new_nodes.append(ParentNode(tag="ol", children=[LeafNode(tag="li", value=re.sub(r'\d\. ', '', item)) for item in md_block.splitlines()]))
+                child_values = []
+                lines = md_block.splitlines()
+                for line in lines:
+                    child_nodes = re.sub(r'\d\. ', '', "".join([text_node_to_html_node(node).to_html() for node in text_to_textnodes(line)]).strip())
+                    child_values.append(LeafNode(tag="li", value=child_nodes))
+                new_nodes.append(ParentNode(tag="ol", children=child_values))
             case BlockType.UNORDERED_LIST:
-                new_nodes.append(ParentNode(tag="ul", children=[LeafNode(tag="li", value=re.sub(r'- ', '', item)) for item in md_block.splitlines()]))
+                child_values = []
+                lines = md_block.splitlines()
+                for line in lines:
+                    child_nodes = re.sub(r'^- ', '', "".join([text_node_to_html_node(node).to_html() for node in text_to_textnodes(line)]).strip())
+                    child_values.append(LeafNode(tag="li", value=child_nodes))
+                new_nodes.append(ParentNode(tag="ul", children=child_values))
             case _:
                 if "\n" in md_block:
                     md_block = "\n".join(md_block.splitlines())
@@ -190,10 +201,8 @@ def generate_page(from_path, template_path, dest_path):
         markdown = md_file.read()
     html_node = markdown_to_html_nodes(markdown)
     page_title = extract_title(markdown)
-    print(html_node)
     with open(template_path, "r") as template_file:
         html_template = template_file.read()
-    print(html_template)
     with open(dest_path, "w") as html_page:
         new_page = html_template.replace("{{ Title }}", page_title).replace("{{ Content }}", html_node.to_html())
         html_page.write(new_page)
