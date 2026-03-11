@@ -161,8 +161,8 @@ def markdown_to_html_nodes(markdown_text):
             case BlockType.CODE:
                 new_nodes.append(ParentNode(tag="div", children=[ParentNode(tag="pre", children=[LeafNode(tag="code", value=re.sub(r'^```|```$', '', md_block).lstrip())])]))
             case BlockType.QUOTE:
-                # TODO: Fix to remove '> ' from html output
-                new_nodes.append(LeafNode(tag="blockquote", value="\n".join(md_block.splitlines().replace('"', "'"))))
+                quote_value = "\n".join([re.sub(r'^>\s?', '', line) for line in md_block.splitlines()])
+                new_nodes.append(LeafNode(tag="blockquote", value=quote_value))
             case BlockType.ORDERED_LIST:
                 child_values = []
                 lines = md_block.splitlines()
