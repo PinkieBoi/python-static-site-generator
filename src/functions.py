@@ -59,14 +59,16 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
         if node.text.count(delimiter) == 0 or node.text.count(delimiter) % 2 != 0 or node.text_type == TextType.CODE:
             new_nodes = [node]
         else:
+            split_text = node.text.split(delimiter)
+            new_nodes = []
             if delimiter == "```":
                 new_nodes = [TextNode(text=re.sub(r'^```\n', '', node.text), text_type=text_type)]
             else:
-                split_text = node.text.split(delimiter)
-                node1 = TextNode(text=split_text[0], text_type=node.text_type)
-                d_node = TextNode(text=split_text[1], text_type=text_type)
-                node3 = TextNode(text=split_text[2], text_type=node.text_type)
-                new_nodes = [node1, d_node, node3]
+                for index, excerpt in enumerate(split_text):
+                    if index % 2 == 0:
+                        new_nodes.append(TextNode(text=excerpt, text_type=node.text_type))
+                    else:
+                        new_nodes.append(TextNode(text=excerpt, text_type=text_type))
         all_new_nodes.extend(new_nodes)
     return all_new_nodes
 

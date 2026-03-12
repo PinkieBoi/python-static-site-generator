@@ -326,12 +326,4 @@ class TestExtractTitle(unittest.TestCase):
         ```
         """
         md_title = extract_title(md)
-        print(md_title)
         self.assertEqual(md_title, "This is a full document")
-
-    def test_provided_md_document(self):
-        with open("content/index.md", "r") as md_file:
-            md = md_file.read()
-        html_nodes = markdown_to_html_nodes(md)
-        for node in html_nodes.children:
-            print(node)
