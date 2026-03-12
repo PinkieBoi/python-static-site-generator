@@ -6,6 +6,7 @@ from functions import generate_page
 def find_files(directory, files):
     return [file for file in files if os.path.isfile(os.path.join(directory, file))]
 
+
 def create_public():
     if os.path.exists("public"):
         shutil.rmtree("public")
