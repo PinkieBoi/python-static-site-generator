@@ -194,15 +194,15 @@ def extract_title(markdown):
     return md_title[0]
 
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, dest_path):
     abs_path = os.path.abspath(".") + "/" + "/".join(dest_path.split("/")[:-1])
-    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+    print(f"Generating page from {from_path} to {dest_path} using template.html")
     with open(from_path, "r") as md_file:
         markdown = md_file.read()
     html_node = markdown_to_html_nodes(markdown)
     page_title = extract_title(markdown)
-    with open(template_path, "r") as template_file:
+    with open("template.html", "r") as template_file:
         html_template = template_file.read()
-    with open(dest_path, "w") as html_page:
+    with open(dest_path.rstrip(".md") + ".html", "w") as html_page:
         new_page = html_template.replace("{{ Title }}", page_title).replace("{{ Content }}", html_node.to_html())
         html_page.write(new_page)
