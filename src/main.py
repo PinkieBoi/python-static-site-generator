@@ -29,7 +29,7 @@ def generate_page(from_path, dest_path):
 def create_docs():
     if os.path.exists("docs"):
         shutil.rmtree("docs")
-    dest_dir = "docs" + get_basepath()
+    dest_dir = "docs"
     shutil.copytree("content", dest_dir, copy_function=generate_page)
     shutil.copytree("static", dest_dir, dirs_exist_ok=True)
 
